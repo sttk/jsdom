@@ -14,27 +14,36 @@ exports.tests = {
       </script>\
       </head><body></body></html>',
       {
+        created,
         features : {
           FetchExternalResources: ['script','iframe']
         }
       }).defaultView;
-    window.iframe.onload = function() {
-      test.strictEqual(window.DONE, 1);
-      test.strictEqual(window.PARENT_IS_TOP, true);
 
-      //insert a script tag to make sure the global set in the iframe is visible
-      //in the parent window context
-      var doc = window.document;
-      var script = doc.createElement('script');
-      script.textContent = 'results=[aGlobal, DONE, PARENT_IS_TOP]';
-      doc.body.appendChild(script);
-      //the script is executed asynchronously after insertion to the document,
-      //so setTimeout is needed
-      setTimeout(function(){
-        test.deepEqual(window.results, [1, 1, true]);
+    function created(err, window) {
+      /*
+      window.iframe.onload = function() {
+        test.strictEqual(window.DONE, 1);
+        test.strictEqual(window.PARENT_IS_TOP, true);
+  
+        //insert a script tag to make sure the global set in the iframe is visible
+        //in the parent window context
+        var doc = window.document;
+        var script = doc.createElement('script');
+        script.textContent = 'results=[aGlobal, DONE, PARENT_IS_TOP]';
+        doc.body.appendChild(script);
+        //the script is executed asynchronously after insertion to the document,
+        //so setTimeout is needed
+        setTimeout(function(){
+          test.deepEqual(window.results, [1, 1, true]);
+          test.done();
+        }, 0);
+      };
+      */
+      window.addEventListener("load", () => {
         test.done();
-      }, 0);
-    };
+      });
+    }
   },
 
   frame_src_relative_to_parent_doc: function(test) {

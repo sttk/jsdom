@@ -55,12 +55,31 @@ describe("jsdom/inside-worker-smoke-tests", () => {
   });
 
   specify("execute scripts referring to global built-ins (GH-1175)", { async: true }, t => {
+    /* This script causes an error on actual Web browsers.
     const document = jsdom.jsdom(`<!DOCTYPE html><script>
       document.body.textContent = Error.name + window.Object.name + NaN + ("undefined" in window);
     </script>`);
 
     assert.strictEqual(document.body.textContent, "ErrorObjectNaNtrue");
-    t.done();
+    */
+
+    const document = jsdom.jsdom(`<!DOCTYPE html><body></body><script>
+      document.body.textContent = Error.name + window.Object.name + NaN + ("undefined" in window);
+    </script>`);
+
+    assert.strictEqual(document.body.textContent, "ErrorObjectNaNtrue");
+
+
+    const window = jsdom.jsdom(`<!DOCTYPE html><body></body><script>
+      window.addEventListener("load", () => {
+        document.body.textContent = Error.name + window.Object.name + NaN + ("undefined" in window);
+      });
+    </script>`).defaultView;
+
+    window.addEventListener("load", () => {
+      assert.strictEqual(document.body.textContent, "ErrorObjectNaNtrue");
+      t.done();
+    });
   });
 
   specify("test async global variable context", { async: true }, t => {

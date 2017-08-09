@@ -62,6 +62,7 @@ describe("Local tests in Web Platform Test format (to-upstream)", () => {
     "encoding/meta/no-meta.html",
     "html/browsers/browsing-the-web/navigating-across-documents/javascript-url-side-effects.html",
     "html/browsers/windows/nested-browsing-contexts/iframe-referrer.html",
+    "html/browsers/scripts/loading-order.html",
     "html/dom/elements/elements-in-the-dom/click-in-progress-flag.html",
     "html/dom/elements/global-attributes/dir-attribute.html",
     "html/editing/activation/click-bail-on-disabled.html",
