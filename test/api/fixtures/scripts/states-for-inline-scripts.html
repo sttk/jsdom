@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8"/>
+<script id="script-0">
+console.log("Script-0");
+</script>
+<script id="script-1"></script>
+<script id="script-1a">
+</script>
+<script id="script-1b" src=""></script>
+<script id="script-2">
+console.log("Script-2");
+
+var script0 = document.getElementById("script-0");
+document.head.appendChild(script0);
+
+var script1 = document.getElementById("script-1");
+//script1.textContent = "console.log('Script-1')";
+script1.appendChild(document.createTextNode("console.log('Script-1')"));
+
+var script1a = document.getElementById("script-1a");
+script1a.textContent = "console.log('Script-1a')";
+
+var script1b = document.getElementById("script-1b");
+script1b.removeAttribute("src");
+script1b.textContent = "console.log('Script-1b')";
+
+var script3 = document.createElement("script");
+script3.id = "scirpt-3";
+script3.textContent = "console.log('Script-3')";
+document.head.appendChild(script3);
+
+script0.textContent = "console.log('Script-0a')";
+document.head.appendChild(script0);
+
+window.addEventListener("DOMContentLoaded", event => {
+  console.log('>', event);
+});
+</script>
+</head>
+<body>
+<script>
+console.log("Script-in-body");
+</script>
+</body>
+</html>

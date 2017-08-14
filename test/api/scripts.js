@@ -3,7 +3,7 @@
 const { expect } = require("chai");
 const { describe, it } = require("mocha-sugar-free");
 const { VirtualConsole, JSDOM } = require("../..");
-const { readTestFixture } = require("../util");
+const { readTestFixture, getTestFixtureUrl } = require("../util");
 
 describe("scripts", () => {
   describe("Constructor", () => {
@@ -195,6 +195,10 @@ describe("scripts", () => {
         expect(script.async).to.equal(true);
         expect(script.getAttribute("async")).to.equal("bbb");
 
+        script.setAttribute("async", "");
+        expect(script.async).to.equal(true);
+        expect(script.getAttribute("async")).to.equal("");
+
         script.removeAttribute("async");
         expect(script.async).to.equal(false);
         expect(script.getAttribute("async")).to.equal(null);
@@ -220,6 +224,10 @@ describe("scripts", () => {
         script.setAttribute("defer", "aaa");
         expect(script.defer).to.equal(true);
         expect(script.getAttribute("defer")).to.equal("aaa");
+
+        script.setAttribute("defer", "");
+        expect(script.async).to.equal(true);
+        expect(script.getAttribute("defer")).to.equal("");
 
         script.removeAttribute("defer");
         expect(script.defer).to.equal(false);
@@ -311,10 +319,40 @@ describe("scripts", () => {
       });
     });
   });
-  it("Should loading event handlers and script contents in correct order",
-  { async: true, skipIfBrowser: false }, context => {
-    readTestFixture("api/fixtures/scripts/loading-order.html").then(html => {
-      createWindow(context, html, logs => {
+  describe("Inline scripts", () => {
+    it("Should control to run a script with script element states " +
+    "(inline scripts)", { async: true, skipIfBrowser: false }, context => {
+      const fp = "api/fixtures/scripts/states-for-inline-scripts.html";
+      openWindow(context, fp, logs => {
+        expect(logs).deep.equal([
+          "Script-0",
+          "Script-2",
+          "Script-1",
+          "Script-3",
+          "Script-in-body"
+        ]);
+      });
+    });
+    it("Should control to run a script with script element states " +
+    "(external files)", { async: true, skipIfBrowser: false }, context => {
+      const fp = "api/fixtures/scripts/states-for-external-files.html";
+      openWindow(context, fp, logs => {
+        expect(logs).deep.equal([
+          "Script-external-file-0",
+          "Script-inline-0",
+          "Script-inline-1",
+          "Script-external-file-2",
+          "Script-inline-2",
+          "Script-in-body",
+          "Script-external-file-1",
+          "Script-external-file-3"
+        ]);
+      });
+    });
+    it("Should loading event handlers and script contents in correct order",
+    { async: true, skipIfBrowser: false }, context => {
+      const fp = "api/fixtures/scripts/loading-order.html";
+      openWindow(context, fp, logs => {
         expect(logs).deep.equal([
           "script-1",
           "script-2",
@@ -329,21 +367,28 @@ describe("scripts", () => {
   });
 });
 
-function createWindow(context, html, test) {
-  const logs = [];
-  const virtualConsole = new VirtualConsole();
-  virtualConsole.on("log", text => {
-    logs.push(text);
-  });
+function openWindow(context, fpath, test) {
+  const url = getTestFixtureUrl(fpath);
+  readTestFixture(fpath).then(html => {
+    const logs = [];
+    const virtualConsole = new VirtualConsole();
+    virtualConsole.on("log", text => {
+      logs.push(text);
+    });
 
-  const opts = { runScripts: "dangerously", virtualConsole };
-  const window = new JSDOM(html, opts).window;
-  window.addEventListener("load", () => {
-    try {
-      test(logs);
-      context.done();
-    } catch (e) {
-      context.done(e);
-    }
+    const runScripts = "dangerously";
+    const resources = "usable";
+
+    const opts = { url, resources, runScripts, virtualConsole };
+
+    const window = new JSDOM(html, opts).window;
+    window.addEventListener("load", () => {
+      try {
+        test(logs);
+        context.done();
+      } catch (e) {
+        context.done(e);
+      }
+    });
   });
 }
